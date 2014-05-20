@@ -1,5 +1,7 @@
 // Globals Variables
 var board = new Array(9);
+var timeStart = null;
+var timeStop = null;
 
 var updates = 0;
 
@@ -18,17 +20,23 @@ $( document ).ready(function() {
 	$('#solve').click(function () {
 		// have a check to make sure that the table is valid
 		// fill each non solved square with possible 
-		fillpossible();
-		step1();		
 		
-		fillpossible();
-		step2();		
+		//for(;;)
+		//{
+			timeStart = new Date().getTime();
+			fillpossible();
+			var c_update = crossCheck();		
+			
+			fillpossible();
+			var i_update = isolationCheck();		
+			
+			console.log("Updates: c->" + c_update + " i->" + i_update);
+			//if(checkErrors(false) == 2)
+			//	break;
 				
-		//check if number only locate in 1 	row/column
-		//fillpossible();
-		//step3();
-		
-		checkErrors(false);
+			//if(c_update == 0 && i_update == 0)
+			//	break;
+		//}
 	});
 	
 	$('#check').click(function() {
@@ -37,7 +45,9 @@ $( document ).ready(function() {
 });
 
 
-function step1() {
+function crossCheck() {
+	var updates = 0;
+	
 	//check if each number only shows up once in subgroup
 	for(g=0; g<9; g++)
 	{
@@ -85,11 +95,11 @@ function step1() {
 		}
 	}
 	
-	console.log(updates + " updates by cross checking");
+	return updates;
 }
 
 // check possiblies for each cell
-function step2(){
+function isolationCheck(){
 	updates = 0;
 	
 	// loop through rows and columns
@@ -119,7 +129,7 @@ function step2(){
 		}
 	}
 	
-	console.log(updates + " updates by isolation");
+	return updates;
 }
 
 // calculate each possible for non solved
@@ -138,35 +148,130 @@ function fillpossible(){
 				continue;
 				
 			// check possiblities for each of the cells
-			board[i][n].possible = [];
 			outer:
-			for(check=1; check<10; check++)
+			for(z=board[i][n].possible.length - 1; z>=0; z--)
 			{
+				var check = board[i][n].possible[z];
+				
 				for(r=row; r<(row+3); r++)
 				{
 					for(c=col; c<(col+3); c++)
 					{
-						 if(board[r][c].value == check) continue outer;
+						 if(board[r][c].value == board[i][n].possible[z]){
+							board[i][n].possible.splice(z, 1);
+							continue outer;
+						 }
 					}
 				}				
 				
 				// check if # lives in row
 				for(c=0; c<9; c++)
 				{	 
-					if(board[i][c].value == check) continue outer;
+					if(board[i][c].value == board[i][n].possible[z]){
+						board[i][n].possible.splice(z, 1);
+						continue outer;
+					 }
 				}
 				
 				// check if # lives in column
 				for(r=0; r<9; r++)
 				{	 
-					if(board[r][n].value == check) continue outer;
+					if(board[r][n].value == board[i][n].possible[z]){
+						board[i][n].possible.splice(z, 1);
+						continue outer;
+					 }
 				}
 				
-				// Sweet append to possibilities
-				board[i][n].possible.push(check);
+				// Sweet still possible leave it
 			}
 		}
 	}
+	
+	// check if number is ensured to be in 1 row/colum per subgroup
+	// if so then remove them from the rows and columns
+	var count = 0;
+	for(g=0; g<9; g++)
+	{
+		outerValueLoop:
+		for(i=1; i<10; i++)
+		{
+			var x = [];
+			var y = [];
+			
+			// check if # already lives in group
+			var row = Math.floor(g/3)*3; // start at row -> 3
+			var col = g%3*3; // start at col -> 3
+
+			for(r=row; r<(row+3); r++)
+			{
+				for(c=col; c<(col+3); c++)
+				{
+					if(board[r][c].solved !== true)
+					{		
+						for(p=0; p<board[r][c].possible.length; p++)
+						{
+							if(board[r][c].possible[p] == i) 
+							{
+								x.push(r);
+								y.push(c);
+							}
+						}
+					}
+				}
+			}
+			
+			if(x.length > 1) //**y.length > 1
+			{
+				var i_row = identical(x);
+				var i_col = identical(y);
+				
+				// if all in same row remove from others 
+				if(i_row){
+					console.log("identical row " + g + "," + i_row);
+					count++;
+					
+					for(cw=0; cw<9; cw++)
+					{
+						if(cw<row && cw>=(row+3))
+						{
+							var index = board[x][cw].possible.indexOf(i_row);
+							if (index > -1) {
+								board[x][cw].possible.splice(index, 1);
+							}
+						}
+					}
+				}
+				
+				//
+				if(i_col){
+					console.log("identical col " + g + "," + i_col);
+					count++;
+					
+					for(cw=0; cw<9; cw++)
+					{
+						if(cw<row && cw>=(row+3))
+						{
+							var index = board[cw][y].possible.indexOf(i_col);
+							if (index > -1) {
+								board[cw][y].possible.splice(index, 1);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	console.log(count);
+}
+
+// helper fucntion for fillpossible
+function identical(array) {
+    var first = array[0];
+    for(var i=1; i<array.length; i++)
+	{
+		if(array[i] != first) return 0;
+	}
+	return first;
 }
 
 function setTable(){
@@ -213,8 +318,14 @@ function initTable(){
 	for(j=0; j<board.length; j++)
 	{
 		board[j]=new Array(9);
-		for(k=0; k<board[j].length; k++)
-			board[j][k]=new point(null, false);
+		for(k=0; k<board[j].length; k++){
+			board[j][k]= new point(null, false);
+			board[j][k].possible = new Array(9);
+			for(z=0; z<board[j][k].possible.length; z++)
+			{
+				board[j][k].possible[z] = (z + 1);
+			}
+		}
 	}
 	
 	//awful coding standard
@@ -238,10 +349,12 @@ function initTable(){
 function point(val, fix){
 	this.value = val;
 	this.solved = fix;
-	this.possible = [];
+	this.possible;
 }
 
 function checkErrors(verbose){
+
+	var complete = 0;
 	//loop rows
 	for(r=0; r<board.length; r++) 
 	{
@@ -256,6 +369,8 @@ function checkErrors(verbose){
 			if(board[r][c].solved !== true)
 				continue;
 				
+			complete++;
+			
 			// check if # lives in row
 			for(i=0; i<9; i++)
 			{	 
@@ -294,8 +409,14 @@ function checkErrors(verbose){
 		}
 	}
 	
-	if(verbose)
+	if(complete == 81)
 	{	
+		timeStop =  new Date().getTime();
+		alert("Winner in "+(timeStop-timeStart)/1000+" seconds");	
+		return 2;
+	}
+	else if(verbose)
+	{
 		alert("Test Passed");	
 	}
 	else
