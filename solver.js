@@ -97,8 +97,7 @@ function crossCheck() {
 			}	
 			if(x != -1 && y != -1)
 			{
-				board[x][y].value = i;
-				board[x][y].solved = true;
+				board[x][y].solve(i);
 				updates++;
 				
 				$('#sudoku-table tr:eq('+x+') td:eq('+y+')')
@@ -131,8 +130,7 @@ function isolationCheck(){
 				// one possiblity we know it fits
 				if(board[r][c].possible.length == 1)
 				{
-					board[r][c].value = board[r][c].possible[0];
-					board[r][c].solved = true;
+					board[r][c].solve(board[r][c].possible[0]);
 					updates++;
 					
 					$('#sudoku-table tr:eq('+r+') td:eq('+c+')')
@@ -165,14 +163,14 @@ function fillpossible(){
 			outer:
 			for(z=board[i][n].possible.length - 1; z>=0; z--)
 			{
-				var check = board[i][n].possible[z];
+				var value = board[i][n].possible[z];
 				
 				for(r=row; r<(row+3); r++)
 				{
 					for(c=col; c<(col+3); c++)
 					{
-						 if(board[r][c].value == board[i][n].possible[z]){
-							board[i][n].possible.splice(z, 1);
+						 if(board[r][c].value == value){
+							board[i][n].removePossibility(value);
 							continue outer;
 						 }
 					}
@@ -181,8 +179,8 @@ function fillpossible(){
 				// check if # lives in row
 				for(c=0; c<9; c++)
 				{	 
-					if(board[i][c].value == board[i][n].possible[z]){
-						board[i][n].possible.splice(z, 1);
+					if(board[i][c].value == value){
+						board[i][n].removePossibility(value);
 						continue outer;
 					 }
 				}
@@ -190,8 +188,8 @@ function fillpossible(){
 				// check if # lives in column
 				for(r=0; r<9; r++)
 				{	 
-					if(board[r][n].value == board[i][n].possible[z]){
-						board[i][n].possible.splice(z, 1);
+					if(board[r][n].value == value){
+						board[i][n].removePossibility(value);
 						continue outer;
 					 }
 				}
@@ -248,10 +246,7 @@ function fillpossible(){
 					{
 						if(cw<row && cw>=(row+3))
 						{
-							var index = board[x][cw].possible.indexOf(i_row);
-							if (index > -1) {
-								board[x][cw].possible.splice(index, 1);
-							}
+							var index = board[x][cw].removePossibility(i_row);
 						}
 					}
 				}
@@ -265,10 +260,7 @@ function fillpossible(){
 					{
 						if(cw<row && cw>=(row+3))
 						{
-							var index = board[cw][y].possible.indexOf(i_col);
-							if (index > -1) {
-								board[cw][y].possible.splice(index, 1);
-							}
+							board[cw][y].removePossibility(i_col);
 						}
 					}
 				}
@@ -365,7 +357,6 @@ function initTable(puzzle_input){
 
 // Objects
 class point{
-
 	constructor()
 	{
 		this.value = null;
@@ -385,6 +376,14 @@ class point{
 		this.value = val;
 		this.solved = true;
 		this.possible = [val];
+	}
+
+	removePossibility(val)
+	{
+		var index = this.possible.indexOf(val);
+		if (index > -1) {
+			this.possible.splice(index, 1);
+		}
 	}
 }
 
