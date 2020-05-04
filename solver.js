@@ -25,15 +25,13 @@ $( document ).ready(function() {
 		var c_update = crossCheck();		
 		
 		fillpossible();
-		var i_update = isolationCheck();		
-			
+		var i_update = isolationCheck();
+
+		// check column check
+
+		// check N only in N squares. You can remove them from other 
+		
 		console.log("Updates: c->" + c_update + " i->" + i_update);
-		//if(checkErrors(false) == 2)
-		//	break;
-			
-		//if(c_update == 0 && i_update == 0)
-		//	break;
-		//}
 	});
 	
 	$('#check').click(function() {
@@ -45,6 +43,17 @@ $( document ).ready(function() {
 		{
 			initTable();
 		}
+	});
+	
+	$('#test').click(function() {
+		var input = prompt("Test Input");
+
+		if(input && input.length == 81)
+		{
+			var normalizedInput = input;
+			initTable(normalizedInput);
+		}
+		
 	});
 });
 
@@ -114,9 +123,10 @@ function isolationCheck(){
 			if(board[r][c].solved !== true)
 			{
 				// no possiblies there is an error on the table, shoot
-				if(board[r][c].possible.length < 1) 
+				if(board[r][c].possible.length < 1)
+				{
 					alert('0 possible failure...')
-				
+				}
 				
 				// one possiblity we know it fits
 				if(board[r][c].possible.length == 1)
@@ -287,16 +297,13 @@ function setTable(){
 			$('#sudoku-table tr:eq('+r+') td:eq('+c+')').empty();
 			if(value > 0 && value < 10)
 			{
-				board[r][c].value=value;   
-				board[r][c].solved = true;
+				board[r][c].solve(value);
 				$('#sudoku-table tr:eq('+r+') td:eq('+c+')')
 					.text(board[r][c].value)
 					.css('background-color', '#CF8600');
 			}
 			else
 			{
-				board[r][c].value=null;   
-				board[r][c].solved = false;
 				$('#sudoku-table tr:eq('+r+') td:eq('+c+')')
 					.text(board[r][c].value)
 					.css('background-color', '#fff');
@@ -307,7 +314,7 @@ function setTable(){
 	console.log(board);
 }
 
-function initTable(){
+function initTable(puzzle_input){
 	// Html
 	$('#sudoku-table').empty();
 	var content = '';
@@ -319,15 +326,22 @@ function initTable(){
 	}
 	$('#sudoku-table').append(content);
 	
-	for(j=0; j<board.length; j++)
+	
 	{
-		board[j]=new Array(9);
-		for(k=0; k<board[j].length; k++){
-			board[j][k]= new point(null, false);
-			board[j][k].possible = new Array(9);
-			for(z=0; z<board[j][k].possible.length; z++)
-			{
-				board[j][k].possible[z] = (z + 1);
+		for(j=0; j<board.length; j++)
+		{
+			board[j]=new Array(9);
+			for(k=0; k<board[j].length; k++){
+				board[j][k]= new point();
+				
+				if(puzzle_input)
+				{
+					square_input = puzzle_input[j*9 + k%9];
+					if(square_input != 0)
+					{
+						board[j][k].solve(square_input);
+					}
+				}
 			}
 		}
 	}
@@ -350,10 +364,28 @@ function initTable(){
 }
 
 // Objects
-function point(val, fix){
-	this.value = val;
-	this.solved = fix;
-	this.possible;
+class point{
+
+	constructor()
+	{
+		this.value = null;
+		this.solved = false;
+
+		this.possible = new Array(9);
+
+		// by default all are possible
+		for(var i=0; i<this.possible.length; i++)
+		{
+			this.possible[i] = (i + 1);
+		}
+	}
+
+	solve(val)
+	{
+		this.value = val;
+		this.solved = true;
+		this.possible = [val];
+	}
 }
 
 function checkErrors(verbose){
