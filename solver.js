@@ -15,32 +15,36 @@ $( document ).ready(function() {
 		setTable();
 		if(checkErrors(false) < 1)
 			initTable();
+
+		timeStart = new Date().getTime();
 	})
 	
 	$('#solve').click(function () {
-		// have a check to make sure that the table is valid
-		// fill each non solved square with possible 
+			
+		fillpossible();
+		var c_update = crossCheck();		
 		
-		//for(;;)
-		//{
-			timeStart = new Date().getTime();
-			fillpossible();
-			var c_update = crossCheck();		
+		fillpossible();
+		var i_update = isolationCheck();		
 			
-			fillpossible();
-			var i_update = isolationCheck();		
+		console.log("Updates: c->" + c_update + " i->" + i_update);
+		//if(checkErrors(false) == 2)
+		//	break;
 			
-			console.log("Updates: c->" + c_update + " i->" + i_update);
-			//if(checkErrors(false) == 2)
-			//	break;
-				
-			//if(c_update == 0 && i_update == 0)
-			//	break;
+		//if(c_update == 0 && i_update == 0)
+		//	break;
 		//}
 	});
 	
 	$('#check').click(function() {
 		checkErrors(true);
+	});
+	
+	$('#reset').click(function() {
+		if(confirm("Are you sure you want to reset?"))
+		{
+			initTable();
+		}
 	});
 });
 
