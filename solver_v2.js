@@ -356,12 +356,23 @@ function initTable(puzzle_input){
 	console.log(board);
 }
 
+// Add some bit-wise logic here so we can deduce which alg was used
+const Algorithm = {
+    ELIMINATION: 'elimination', // only one spot a value can exist in a section
+    ISOLATION: 'isolation',     // only one spot a value can fit in a section
+    
+    // these two are unlike the others
+    LINE: 'line',                   // elements only exist in a single row/col. Reduce other squares
+    GROUPING: 'grouping'        // N elements exist only in N squares. Can remove only possibliities
+}
+
 // Objects
 class Point{
 	constructor()
 	{
 		this.value = null;
-		this.solved = false;
+        this.solved = false;
+        this.algorithm = null
 
 		this.possible = new Array(9);
 
@@ -372,11 +383,12 @@ class Point{
 		}
 	}
 
-	Solve(val)
+	Solve(val, algorithm)
 	{
 		this.value = val;
 		this.solved = true;
-		this.possible = [val];
+        this.possible = [val];
+        this.algorithm = algorithm;
 	}
 
 	RemovePossibility(val)
@@ -388,11 +400,30 @@ class Point{
 	}
 }
 
+// todo: simply the
+// class Section {
+//     constructor(input)
+//     {
+//         // input expected to be 9 length string of all values
+//         // add logic to track which elements have been already solved / unsolved
+
+// 		// Build board points
+// 		// 0 | 1 | 2
+// 		// - | - | -
+// 		// 3 | 4 | 5
+// 		// - | - | -
+// 		// 6 | 7 | 8
+
+//     }
+// }
+
 // todo: create quadrant object
 
 class Board {
-	constructor()
+	constructor(input)
 	{
+        // input expected to be 81 length string of all values
+
 		// Build board sections
 		// 0 | 1 | 2
 		// - | - | -
@@ -417,23 +448,79 @@ class Board {
 		return xquad + y;
 	}
 
-	GetQuardant(index)
+	GetSection(index)
 	{
 		// return [] of this.cells;
 		var xstart = (index % 3) * 3;
 		var ystart = Math.floor(index / 3) * 3;
 
-		// Console.Log("{xstart, ystart}");
+        // Console.Log("{xstart, ystart}");
+        var output = [];
+        for(var x=0; x<3; x++)
+        for(var y=0; y<3; y++)
+        {
+            output.push(this.board.cells[xstart+x][ystart+y])
+        }
+
+        return output;
 	}
 }
 
 class App
 {
 	// todo: add input here
-	constructor()
+	constructor(input)
 	{
-		this.board = new Board();
-	}
+		this.board = new Board(input);
+    }
+    
+    SolveIteration()
+    {
+        var updatedOuter = false;
+        // get each section
+        for(var s=0; s<this.board.sections; s++)
+        {
+            var sectionElements = this.board.GetSection(s);
+            
+            // loop section until no further updates can be determined
+            var updatedInner = false;
+            do {
+                // check if any are the only value available.
+                var element = sectionElements[i];
+                for (var i=0; i<sectionElements.length; i++)
+                {
+                    if (!element.solved)
+                    {
+                        if (element.possible.length == 1)
+                        {
+                            element.Solve(element.possible[0])
+                            // todo: remove from all others in section...
+                            updatedOuter |= updatedInner |= true;
+                        }
+                    }
+                }
+
+                // check if any only exist in a single location
+                for (var i=1; i<=9; i++)
+                {
+                    var index = -1;
+                    if (!element.solved)
+                    {
+                        if (element.possible.length == 1)
+                        {
+                            element.Solve(element.possible[0])
+                            updatedOuter |= updatedInner |= true;
+                        }
+                    }
+                }
+
+                // check if any value can only exist in a single row
+                // check if any values exist in N locations with N
+            } while (updated)          
+        }
+
+        return updatedOuter;
+    }
 }
 
 function checkErrors(verbose){
@@ -509,46 +596,4 @@ function checkErrors(verbose){
 	}
 	
 	return 1;
-}
-
-function awfulTest(){
-	board[0][1].value=1;   board[0][1].solved = true;
-	board[0][4].value=6;   board[0][4].solved = true;
-	board[0][7].value=4;   board[0][7].solved = true;
-	board[0][8].value=5;   board[0][8].solved = true;
-               
-	board[1][2].value=9;   board[1][2].solved = true;
-	board[1][7].value=7;   board[1][7].solved = true;
-	board[1][8].value=8;   board[1][8].solved = true;
-             
-	board[2][2].value=5;   board[2][2].solved = true;
-	board[2][4].value=1;   board[2][4].solved = true;
-	board[2][6].value=2;   board[2][6].solved = true;
-	board[2][8].value=9;   board[2][8].solved = true;
-            
-	board[3][2].value=1;   board[3][2].solved = true;
-	board[3][3].value=2;   board[3][3].solved = true;
-	board[3][8].value=6;   board[3][8].solved = true;
-             
-	board[4][2].value=6;   board[4][2].solved = true;
-	board[4][4].value=8;   board[4][4].solved = true;
-	board[4][6].value=9;   board[4][6].solved = true;
-            
-	board[5][0].value=5;   board[5][0].solved = true;
-	board[5][5].value=9;   board[5][5].solved = true;
-	board[5][6].value=4;   board[5][6].solved = true;
-         
-	board[6][0].value=2;   board[6][0].solved = true;
-	board[6][2].value=3;   board[6][2].solved = true;
-	board[6][4].value=7;   board[6][4].solved = true;
-	board[6][6].value=6;   board[6][6].solved = true;
-   
-	board[7][0].value=1;   board[7][0].solved = true;
-	board[7][1].value=6;   board[7][1].solved = true;
-	board[7][6].value=8;   board[7][6].solved = true;
-       
-	board[8][0].value=8;   board[8][0].solved = true;
-	board[8][1].value=5;   board[8][1].solved = true;
-	board[8][4].value=9;   board[8][4].solved = true;
-	board[8][7].value=3;   board[8][7].solved = true;
 }
