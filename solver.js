@@ -1,4 +1,5 @@
 // Globals Variables
+
 var board = new Array(9);
 var timeStart = null;
 var timeStop = null;
@@ -15,32 +16,45 @@ $( document ).ready(function() {
 		setTable();
 		if(checkErrors(false) < 1)
 			initTable();
+
+		timeStart = new Date().getTime();
 	})
 	
 	$('#solve').click(function () {
-		// have a check to make sure that the table is valid
-		// fill each non solved square with possible 
+			
+		fillpossible();
+		var c_update = crossCheck();		
 		
-		//for(;;)
-		//{
-			timeStart = new Date().getTime();
-			fillpossible();
-			var c_update = crossCheck();		
-			
-			fillpossible();
-			var i_update = isolationCheck();		
-			
-			console.log("Updates: c->" + c_update + " i->" + i_update);
-			//if(checkErrors(false) == 2)
-			//	break;
-				
-			//if(c_update == 0 && i_update == 0)
-			//	break;
-		//}
+		fillpossible();
+		var i_update = isolationCheck();
+
+		// check column check
+
+		// check N only in N squares. You can remove them from other 
+		
+		console.log("Updates: c->" + c_update + " i->" + i_update);
 	});
 	
 	$('#check').click(function() {
 		checkErrors(true);
+	});
+	
+	$('#reset').click(function() {
+		if(confirm("Are you sure you want to reset?"))
+		{
+			initTable();
+		}
+	});
+	
+	$('#test').click(function() {
+		var input = prompt("Test Input");
+
+		if(input && input.length == 81)
+		{
+			var normalizedInput = input;
+			initTable(normalizedInput);
+		}
+		
 	});
 });
 
@@ -84,8 +98,7 @@ function crossCheck() {
 			}	
 			if(x != -1 && y != -1)
 			{
-				board[x][y].value = i;
-				board[x][y].solved = true;
+				board[x][y].solve(i);
 				updates++;
 				
 				$('#sudoku-table tr:eq('+x+') td:eq('+y+')')
@@ -110,15 +123,15 @@ function isolationCheck(){
 			if(board[r][c].solved !== true)
 			{
 				// no possiblies there is an error on the table, shoot
-				if(board[r][c].possible.length < 1) 
+				if(board[r][c].possible.length < 1)
+				{
 					alert('0 possible failure...')
-				
+				}
 				
 				// one possiblity we know it fits
 				if(board[r][c].possible.length == 1)
 				{
-					board[r][c].value = board[r][c].possible[0];
-					board[r][c].solved = true;
+					board[r][c].solve(board[r][c].possible[0]);
 					updates++;
 					
 					$('#sudoku-table tr:eq('+r+') td:eq('+c+')')
@@ -151,14 +164,14 @@ function fillpossible(){
 			outer:
 			for(z=board[i][n].possible.length - 1; z>=0; z--)
 			{
-				var check = board[i][n].possible[z];
+				var value = board[i][n].possible[z];
 				
 				for(r=row; r<(row+3); r++)
 				{
 					for(c=col; c<(col+3); c++)
 					{
-						 if(board[r][c].value == board[i][n].possible[z]){
-							board[i][n].possible.splice(z, 1);
+						 if(board[r][c].value == value){
+							board[i][n].removePossibility(value);
 							continue outer;
 						 }
 					}
@@ -167,8 +180,8 @@ function fillpossible(){
 				// check if # lives in row
 				for(c=0; c<9; c++)
 				{	 
-					if(board[i][c].value == board[i][n].possible[z]){
-						board[i][n].possible.splice(z, 1);
+					if(board[i][c].value == value){
+						board[i][n].removePossibility(value);
 						continue outer;
 					 }
 				}
@@ -176,8 +189,8 @@ function fillpossible(){
 				// check if # lives in column
 				for(r=0; r<9; r++)
 				{	 
-					if(board[r][n].value == board[i][n].possible[z]){
-						board[i][n].possible.splice(z, 1);
+					if(board[r][n].value == value){
+						board[i][n].removePossibility(value);
 						continue outer;
 					 }
 				}
@@ -234,10 +247,7 @@ function fillpossible(){
 					{
 						if(cw<row && cw>=(row+3))
 						{
-							var index = board[x][cw].possible.indexOf(i_row);
-							if (index > -1) {
-								board[x][cw].possible.splice(index, 1);
-							}
+							board[x][cw].removePossibility(i_row);
 						}
 					}
 				}
@@ -251,10 +261,7 @@ function fillpossible(){
 					{
 						if(cw<row && cw>=(row+3))
 						{
-							var index = board[cw][y].possible.indexOf(i_col);
-							if (index > -1) {
-								board[cw][y].possible.splice(index, 1);
-							}
+							board[cw][y].removePossibility(i_col);
 						}
 					}
 				}
@@ -283,16 +290,13 @@ function setTable(){
 			$('#sudoku-table tr:eq('+r+') td:eq('+c+')').empty();
 			if(value > 0 && value < 10)
 			{
-				board[r][c].value=value;   
-				board[r][c].solved = true;
+				board[r][c].solve(value);
 				$('#sudoku-table tr:eq('+r+') td:eq('+c+')')
 					.text(board[r][c].value)
 					.css('background-color', '#CF8600');
 			}
 			else
 			{
-				board[r][c].value=null;   
-				board[r][c].solved = false;
 				$('#sudoku-table tr:eq('+r+') td:eq('+c+')')
 					.text(board[r][c].value)
 					.css('background-color', '#fff');
@@ -303,7 +307,7 @@ function setTable(){
 	console.log(board);
 }
 
-function initTable(){
+function initTable(puzzle_input){
 	// Html
 	$('#sudoku-table').empty();
 	var content = '';
@@ -315,15 +319,22 @@ function initTable(){
 	}
 	$('#sudoku-table').append(content);
 	
-	for(j=0; j<board.length; j++)
+	
 	{
-		board[j]=new Array(9);
-		for(k=0; k<board[j].length; k++){
-			board[j][k]= new point(null, false);
-			board[j][k].possible = new Array(9);
-			for(z=0; z<board[j][k].possible.length; z++)
-			{
-				board[j][k].possible[z] = (z + 1);
+		for(j=0; j<board.length; j++)
+		{
+			board[j]=new Array(9);
+			for(k=0; k<board[j].length; k++){
+				board[j][k]= new point();
+				
+				if(puzzle_input)
+				{
+					square_input = puzzle_input[j*9 + k%9];
+					if(square_input != 0)
+					{
+						board[j][k].solve(square_input);
+					}
+				}
 			}
 		}
 	}
@@ -346,10 +357,83 @@ function initTable(){
 }
 
 // Objects
-function point(val, fix){
-	this.value = val;
-	this.solved = fix;
-	this.possible;
+class Point{
+	constructor()
+	{
+		this.value = null;
+		this.solved = false;
+
+		this.possible = new Array(9);
+
+		// by default all are possible
+		for(var i=0; i<this.possible.length; i++)
+		{
+			this.possible[i] = (i + 1);
+		}
+	}
+
+	Solve(val)
+	{
+		this.value = val;
+		this.solved = true;
+		this.possible = [val];
+	}
+
+	RemovePossibility(val)
+	{
+		var index = this.possible.indexOf(val);
+		if (index > -1) {
+			this.possible.splice(index, 1);
+		}
+	}
+}
+
+// todo: create quadrant object
+
+class Board {
+	constructor()
+	{
+		// Build board sections
+		// 0 | 1 | 2
+		// - | - | -
+		// 3 | 4 | 5
+		// - | - | -
+		// 6 | 7 | 8
+
+		this.sections = 9;
+
+		this.cells = new Array(this.sections);
+		for (var x = 0; x<this.sections; x++)
+		for (var y = 0; y<this.sections; y++)
+		{
+			board[x][y] = new point();
+		}
+	}
+
+	GetSectionIndex(x, y)
+	{
+		// return section index
+		var xquad = Math.floor(x/3);
+		return xquad + y;
+	}
+
+	GetQuardant(index)
+	{
+		// return [] of this.cells;
+		var xstart = (index % 3) * 3;
+		var ystart = Math.floor(index / 3) * 3;
+
+		// Console.Log("{xstart, ystart}");
+	}
+}
+
+class App
+{
+	// todo: add input here
+	constructor()
+	{
+		this.board = new Board();
+	}
 }
 
 function checkErrors(verbose){

@@ -3,17 +3,130 @@
 
 <title>Sudoku Solver</title>
 
-<script language="javascript" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.js"></script>
-<script language="javascript" type="text/javascript" src="solver.js"></script>
+<script src="https://code.jquery.com/jquery-2.2.1.min.js"  integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="  crossorigin="anonymous"></script>
+<script language="javascript" type="text/javascript" src="utility.js"></script>
+<script language="javascript" type="text/javascript" src="solver_v2.js"></script>
 <link rel="stylesheet" type="text/css" href="style.css">
 
 </head>
+
+<script>
+// Save a library, write a document 
+$(document).ready(function() {
+	function drawBoard(cells)
+	{
+		for(x=0; x<9; x++)
+		{
+			for(y=0; y<9; y++)
+			{
+				cell = cells[x][y];
+				$('#sudoku-table tr:eq('+x+') td:eq('+y+')').empty();
+				if(cell.value && cell.value > 0 && cell.value < 10)
+				{
+					cell.Solve(cell.value);
+					$('#sudoku-table tr:eq('+x+') td:eq('+y+')')
+						// .text(cell.value + "["+cell.x+"]["+cell.y+"]")
+						.text(cell.value)
+						.css('background-color', '#CF8600');						
+				}
+				else
+				{
+					$('#sudoku-table tr:eq('+x+') td:eq('+y+')')
+						//.text("["+cell.x+"]["+cell.y+"]")
+						.css('background-color', '#fff');
+				}	
+			}
+		}
+		
+		console.log(app);
+	}
+
+	$('#back').click(function() {
+		app.StepBackward();
+		drawBoard(app.board.cells);
+	})
+
+	$('#forward').click(function() {
+		app.StepForward();
+		drawBoard(app.board.cells);
+	})
+
+	$('#manual').click(function() {
+		// read from html
+		var input = "";
+		for(r=0; r<9; r++)
+		{
+			for(c=0; c<9; c++)
+			{
+				value = $('#sudoku-table tr:eq('+r+') td:eq('+c+') input').val();
+				$('#sudoku-table tr:eq('+r+') td:eq('+c+')').empty();
+				if(value > 0 && value < 10)
+				{
+					input += value;
+				}
+				else
+				{
+					input += 0;
+				}	
+			}
+		}
+
+		console.log(input);
+		app.SetupBoard(input);
+		
+		drawBoard(app.board.cells);
+	})
+
+	$('#test').click(function() {
+		var asdf = prompt("input test string")
+		{
+			app.SetupBoard(asdf);
+		}
+		
+		drawBoard(app.board.cells);
+	})
+	
+
+	// Html builder
+	$('#sudoku-table').empty();
+	var content = '';
+	for(i=0; i<9; i++){
+		content += '<tr>';
+		for(j=0; j<9; j++)
+			content += '<td><input type="text"></td>';
+		content += '</tr>';
+	}
+	$('#sudoku-table').append(content);
+
+	var test = "570006200108040000040032000000000123456780000000000000000000000000000000000000000000000012345678000000000107005000000000308015700001020000904070207000000069007801";
+	
+	// section test
+	var test = "123000000456000000780000000000123000000456000000780000000000123000000456000000780";
+	
+	// row test
+	var test = "";
+
+	// column test
+	var test = "000000001000000002000000003000000004000000005000000006000000007000000008000000000";
+
+	var test = "000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+	
+	var app = new App();
+
+	//app.SetupBoard(test);
+	//drawBoard(app.board.cells);	
+});
+</script>
 <body>
 	<h1> SUDOKU SOLVER</h1>
 	<table id="sudoku-table"></table>
-	<button id="set">set</button>
-	<button id="solve">solve</button>
-	<button id="check">check</button>
+	<button id="manual">manual</button>	
+	<button id="test">test</button>
+	<br>_____</br>
+	<br>
+	<button id="back">back</button>
+	< --- --- >
+	<button id="forward">forward</button>
 	
 	<br/>
 	<h2 id="instructions">
@@ -21,7 +134,8 @@
 			<td>Fill -></td></td>
 			<td>Set -></td></td>
 			<td>Solve -></td></td>
-			<td>Check</td>
+			<td>Check -></td></td>
+			<td>Reset</td>
 		</tr>
 	</table>
 </body>
