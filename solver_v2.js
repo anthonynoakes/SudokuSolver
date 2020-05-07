@@ -13,13 +13,7 @@ class Point{
 	
 			if (point.possible)
 			{
-				this.possible = [...point.possible]
-
-				// this.possible = new Array(9);
-				// for(var i=0; i<point.possible.length; i++)
-				// {
-				// 	this.possible[i] = point.possible[i];
-				// }
+				this.possible = [...point.possible]; // ES6 hack for initalize array
 			}
 		}
 		else
@@ -234,26 +228,17 @@ class App
 
 	Reduce_internal(cells)
 	{
-		console.log("prior"); console.log(cells);
+		// Find all the solved in section
 		var solved = [];
 		for (var c=0; c<cells.length; c++)
 		{
 			if(cells[c].solved)
 			{
-				solved.push(parseInt(cells[c].value))
+				solved.push(cells[c].value)
 			}
 		}
 
-		// Logic has moved below to simply
-		// for (var c=0; c<cells.length; c++)
-		// {
-		// 	if(!cells[c].solved){
-		// 		for (var r=0; r<solved.length; r++) {
-		// 			cells[c].RemovePossibility(solved[r])
-		// 		}
-		// 	}
-		// }
-
+		// Remove all solved from each possibility
 		for (var r=0; r<solved.length; r++) {
 			for (var c=0; c<cells.length; c++)
 			{
@@ -262,7 +247,6 @@ class App
 				}
 			}			
 		}
-		console.log("after"); console.log(cells);
 	}
 
 	ReducePossibles()
