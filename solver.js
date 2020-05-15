@@ -1,4 +1,5 @@
 // Globals Variables
+
 var board = new Array(9);
 var timeStart = null;
 var timeStop = null;
@@ -246,7 +247,7 @@ function fillpossible(){
 					{
 						if(cw<row && cw>=(row+3))
 						{
-							var index = board[x][cw].removePossibility(i_row);
+							board[x][cw].removePossibility(i_row);
 						}
 					}
 				}
@@ -356,7 +357,7 @@ function initTable(puzzle_input){
 }
 
 // Objects
-class point{
+class Point{
 	constructor()
 	{
 		this.value = null;
@@ -371,19 +372,67 @@ class point{
 		}
 	}
 
-	solve(val)
+	Solve(val)
 	{
 		this.value = val;
 		this.solved = true;
 		this.possible = [val];
 	}
 
-	removePossibility(val)
+	RemovePossibility(val)
 	{
 		var index = this.possible.indexOf(val);
 		if (index > -1) {
 			this.possible.splice(index, 1);
 		}
+	}
+}
+
+// todo: create quadrant object
+
+class Board {
+	constructor()
+	{
+		// Build board sections
+		// 0 | 1 | 2
+		// - | - | -
+		// 3 | 4 | 5
+		// - | - | -
+		// 6 | 7 | 8
+
+		this.sections = 9;
+
+		this.cells = new Array(this.sections);
+		for (var x = 0; x<this.sections; x++)
+		for (var y = 0; y<this.sections; y++)
+		{
+			board[x][y] = new point();
+		}
+	}
+
+	GetSectionIndex(x, y)
+	{
+		// return section index
+		var xquad = Math.floor(x/3);
+		return xquad + y;
+	}
+
+	GetQuardant(index)
+	{
+		// return [] of this.cells;
+		var xstart = (index % 3) * 3;
+		var ystart = Math.floor(index / 3) * 3;
+
+		// Console.Log("{xstart, ystart}");
+	}
+}
+
+class App
+{
+	// todo: add input here
+	constructor()
+	{
+		this.board = new Board();
 	}
 }
 
