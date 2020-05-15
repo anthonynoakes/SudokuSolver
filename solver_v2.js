@@ -38,9 +38,7 @@ class Point{
 	{
 		this.value = parseInt(val);
 		this.solved = true;
-        this.possible = []; // remove all other possiblities
-		
-		console.log("solved:" + this.value);
+        this.possible = [this.value]; // remove all other possiblities
 	}
 
 	RemovePossibility(val)
@@ -92,7 +90,6 @@ class Board {
 		var xstart = (index % 3) * 3;
 		var ystart = Math.floor(index / 3) * 3;
 
-        // Console.Log("{xstart, ystart}");
         var output = [];
         for(var x=0; x<3; x++)
         for(var y=0; y<3; y++)
@@ -108,7 +105,6 @@ class Board {
 		// return [] of this.cells;
 		var ystart = index;
 
-        // Console.Log("{xstart, ystart}");
         var output = [];
         for(var x=0; x<9; x++)
         {
@@ -123,7 +119,6 @@ class Board {
 		// return [] of this.cells;
 		var xstart = index;
 
-        // Console.Log("{xstart, ystart}");
         var output = [];
         for(var y=0; y<9; y++)
         {
@@ -202,14 +197,14 @@ class App
 	
 	SetupBoard(input)
 	{
+		this.step_index = 0;
 		this.board = new Board(input);
 	}
 
 	StepForward()
 	{
-		this.step_index++;
-
-	 this.steps[this.step_index] = this.board.GetSnapshot();
+		this.step_index++
+		this.steps[this.step_index] = this.board.GetSnapshot();
 		this.SolveIteration();
 	}
 
@@ -283,47 +278,44 @@ class App
 		this.logger.log("Reduction loop #" + this.reductionSteps);
 	}
 
-	Solve()
+	SolveByPossibles()
 	{
 		// get each section
         for(var s=0; s<9; s++)
         {
-			var sectionElements = this.board.GetSection(s);
+			var cells = this.board.GetSection(s);
 			
 			// check if any are the only value available.
-			for (var i=0; i<sectionElements.length; i++)
+			for (var i=0; i<cells.length; i++)
 			{
-				var element = sectionElements[i];
-				if (!element.solved)
+				var cell = cells[i];
+				if (!cell.solved)
 				{
-					if (element.possible.length == 1)
+					if (cell.possible.length == 1)
 					{
-						element.Solve(element.possible[0])
+						cell.Solve(cell.possible[0])
 						this.board.Validate();
 					}
 				}
 			}
 
 			// check for each value possible if any only exist in a single location
-			// todo: only loop thru the values not solved for
+			// todo: only check values that have not yet been solved.
 			for (var n=1; n<10; n++)
 			{
 				var index = [];
-				for (var i=0; i<sectionElements.length; i++)
+				for (var i=0; i<cells.length; i++)
 				{
-					var element = sectionElements[i];
-					if (!element.solved)
+					var element = cells[i];
+					if (element.possible.indexOf(n) >= 0)
 					{
-						if (element.possible.indexOf(n) >= 0)
-						{
-							index.push(i);
-						}
+						index.push(i);
 					}
 				}
 				
 				if (index.length == 1)
 				{
-					sectionElements[index[0]].Solve(n);
+					cells[index[0]].Solve(n);
 					this.board.Validate();
 				}
 			}         
@@ -335,7 +327,7 @@ class App
     SolveIteration()
     {
 		this.ReducePossibles();
-		this.Solve();
+		this.SolveByPossibles();
 	}
 	
 	Validate()
@@ -369,79 +361,4 @@ class App
 
 		return false;
 	}
-}
-
-function checkErrors(verbose){
-
-	var complete = 0;
-	//loop rows
-	for(r=0; r<board.length; r++) 
-	{
-		//loop columns
-		for(c=0; c<board.length; c++)
-		{
-			// check if # already lives in group
-			var row = r - r%3; // start at row -> 3
-			var col = c - c%3; // start at col -> 3
-		
-			// only verify solved
-			if(board[r][c].solved !== true)
-				continue;
-				
-			complete++;
-			
-			// check if # lives in row
-			for(i=0; i<9; i++)
-			{	 
-				if(board[r][i].value == board[r][c].value && i != c) 
-				{
-					alert("FAILURE at " + r + ", " + c + " row error");
-					console.log(board[r][c]);
-					return -1;
-				}
-			}
-			
-			// check if # lives in column
-			for(i=0; i<9; i++)
-			{	 
-				if(board[i][c].value == board[r][c].value && i != r) 
-				{
-					alert("FAILURE at " + r + ", " + c + " column error");
-					console.log(board[r][c]);
-					return -1;
-				}
-			}
-			
-			// check to make sure max 1 in each subgroup
-			for(n=row; n<(row+3); n++)
-			{
-				for(m=col; m<(col+3); m++)
-				{
-					 if(board[n][m].value == board[r][c].value && (r != n && c != m))
-					 {
-						alert("FAILURE at " + r + ", " + c + " group error");
-						console.log(board[r][c]);
-						return -1;
-					 }
-				}
-			}				
-		}
-	}
-	
-	if(complete == 81)
-	{	
-		timeStop =  new Date().getTime();
-		alert("Winner in "+(timeStop-timeStart)/1000+" seconds");	
-		return 2;
-	}
-	else if(verbose)
-	{
-		alert("Test Passed");	
-	}
-	else
-	{
-		console.log("Test Passed");	
-	}
-	
-	return 1;
 }
