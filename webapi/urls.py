@@ -3,7 +3,7 @@ from django.contrib import admin
 
 admin.autodiscover()
 
-import web-api.views
+import webapi.views
 
 # To add a new path, first import the app:
 # import blog
@@ -14,5 +14,5 @@ import web-api.views
 # Learn more here: https://docs.djangoproject.com/en/2.1/topics/http/urls/
 
 urlpatterns = [
-    path("", web-api.views.index, name="index"),
+    path("", webapi.views.index, name="index"),
 ]
