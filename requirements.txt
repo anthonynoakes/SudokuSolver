@@ -6,3 +6,4 @@ opencv-python
 numpy
 pytesseract
 matplotlib
+django-cors-headers
