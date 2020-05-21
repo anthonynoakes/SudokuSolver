@@ -42,9 +42,11 @@ def index(request):
     print("got string")
     print(string)
 
-    return HttpResponse('<pre>' + string + '</pre>')
-    # return HttpResponse('Hello from Python!')
-    # return render(request, "index.html")
+    data = {
+        'puzzle': string
+    }
+
+    return HttpResponse(json.dumps(data), content_type='application/json')  
 
 def mock(request, test):
     print(test)
