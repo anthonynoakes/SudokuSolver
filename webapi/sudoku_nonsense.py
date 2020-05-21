@@ -130,7 +130,10 @@ def create_matrix(matrix, numdict):
 
 def find_webpage_sudoku(src):
 
-    page = src
+    
+    page = cv2.imdecode(src, flags=1)
+
+    # page = src
 
     gray = cv2.cvtColor(page,cv2.COLOR_BGR2GRAY)
     __, th = cv2.threshold(gray,215,255,0)

@@ -2,7 +2,6 @@ import requests
 import json
 import base64
 import numpy as np
-import cv2
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -27,10 +26,9 @@ def index(request):
     content = body['content']
 
     imgdata = base64.b64decode(content)
-    jpg_as_np = np.frombuffer(imgdata, dtype=np.uint8);
-    image_buffer = cv2.imdecode(jpg_as_np, flags=1)
+    jpg_as_np = np.frombuffer(imgdata, dtype=np.uint8)
 
-    a = sudoku_nonsense.find_webpage_sudoku(image_buffer);
+    a = sudoku_nonsense.find_webpage_sudoku(jpg_as_np)
 
     result = sudoku_nonsense.get_sudoku_matrix(a)
 
