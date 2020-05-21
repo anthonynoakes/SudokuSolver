@@ -5,6 +5,8 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from . import sudoku_nonsense
+
 
 # from .models import Greeting
 
@@ -20,6 +22,9 @@ def index(request):
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
     content = body['content']
+
+    a = sudoku_nonsense.find_webpage_sudoku(None);
+    sudoku_nonsense.get_sudoku_matrix(a)
 
     return HttpResponse('<pre>' + content + '</pre>')
     # return HttpResponse('Hello from Python!')
