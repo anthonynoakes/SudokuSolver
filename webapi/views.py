@@ -17,11 +17,11 @@ def index(request):
     print(request.get_host())
     # print(request.body)
 
-    # body_unicode = request.body.decode('utf-8')
-    # body = json.loads(body_unicode)
-    # content = body['content']
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+    content = body['content']
 
-    return HttpResponse('<pre>' + request.body + '</pre>')
+    return HttpResponse('<pre>' + content + '</pre>')
     # return HttpResponse('Hello from Python!')
     # return render(request, "index.html")
 
