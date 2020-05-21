@@ -35,7 +35,7 @@ def index(request):
     print(result)
 
     string = ""
-    for val in fin:
+    for val in result:
         for dig in val:
             string = string + str(int(dig))
         
