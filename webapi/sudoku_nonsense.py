@@ -2,6 +2,9 @@ import cv2
 import pytesseract
 import numpy as np
 import matplotlib.pyplot as plt
+import base64
+
+# pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
 def get_sudoku_matrix(src):
     if type(src) == str:
@@ -53,8 +56,14 @@ def get_sudoku_matrix(src):
     #print(num_string)
     num_dict = make_dictionary(num_string)
     final_matrix = create_matrix(matrix, num_dict)
-    plt.imshow(puz)
-    return final_matrix
+    # plt.imshow(puz)
+
+    string = ""
+    for val in final_matrix:
+        for dig in val:
+            string = string + str(int(dig))
+
+    return string
 
 
 # In[44]:
@@ -120,7 +129,8 @@ def create_matrix(matrix, numdict):
     return final_matrix
 
 def find_webpage_sudoku(src):
-    page = cv2.imread(src)
+
+    page = src
 
     gray = cv2.cvtColor(page,cv2.COLOR_BGR2GRAY)
     __, th = cv2.threshold(gray,215,255,0)
