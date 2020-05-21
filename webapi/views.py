@@ -16,25 +16,26 @@ from . import sudoku_nonsense
 # resquest: https://docs.djangoproject.com/en/3.0/ref/request-response/
 @csrf_exempt
 def index(request):
-    r = requests.get('http://httpbin.org/status/418')
-    print(r.text)
     print(request.get_host())
-    # print(request.body)
-
+    
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
     content = body['content']
+    print("read content")
 
     imgdata = base64.b64decode(content)
     jpg_as_np = np.frombuffer(imgdata, dtype=np.uint8)
+    print("processed base64 string")
 
     a = sudoku_nonsense.find_webpage_sudoku(jpg_as_np)
+    print("found sudoku")
 
     result = sudoku_nonsense.get_sudoku_matrix(a)
+    print("got matrix")
 
     print(result)
 
-    return HttpResponse('<pre>' + content + '</pre>')
+    return HttpResponse('<pre>' + result + '</pre>')
     # return HttpResponse('Hello from Python!')
     # return render(request, "index.html")
 

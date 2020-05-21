@@ -16,22 +16,18 @@ def get_sudoku_matrix(src):
 
     gray = cv2.cvtColor(puz, cv2.COLOR_BGR2GRAY)
 
-    #plt.imshow(puz)
     cons = get_contours(gray)
     cs = sorted(cons, key=cv2.contourArea)
 
     pw, ph, sw, sh = get_puzzle_metrics(cs[-1])
-    #print(pw,ph,sw,sh)
     num_cons = []
-    concat = np.ones((75,50))
+    concat = np.zeros((75,50), dtype=np.uint8)
     i = 1
     matrix = np.zeros((9,9))
 
     for c in cons: 
-        #print(i)
         x,y,w,h = cv2.boundingRect(c)
-        #print(cv2.contourArea(c))
-        #if cv2.contourArea(c) < 20000 and cv2.contourArea(c) > 800:
+
         if w*h < 10000 and w*h > 1000 and w > 15 and h > 50:
 
             col = int(np.floor((x+w/2) / sw))
@@ -39,31 +35,23 @@ def get_sudoku_matrix(src):
             #print(x,y,col,row)
             matrix[row][col] = int(i)
             num_img = gray[y:y+h, x:x+w]
-            #cv2.imwrite(str(x) +' '+ str(y) + '.jpg', num_img)
-            #cv2.drawContours(puz, c, -1, (0,255,0), 2)
-
 
             num_cons.append(c)
+            h = 75
+            mult = num_img.shape[0] / h
+            w = int(mult * num_img.shape[1])
 
-            num_img = cv2.resize(num_img, (50,75))
-            concat = np.concatenate((concat, num_img), axis=1)
+            num_img = cv2.resize(num_img, (w,h))
+
+            num_img = cv2.copyMakeBorder(num_img, 0, 0, 10, 10, cv2.BORDER_CONSTANT, value=(255));
+            
+            concat = cv2.hconcat([concat, num_img])
             i += 1
-            #text = pytesseract.image_to_string(final)
-            #print("number " + str(i) + ' ', text)
-
 
     num_string = get_numbers_string(concat)
-    #print(num_string)
     num_dict = make_dictionary(num_string)
     final_matrix = create_matrix(matrix, num_dict)
-    # plt.imshow(puz)
-
-    string = ""
-    for val in final_matrix:
-        for dig in val:
-            string = string + str(int(dig))
-
-    return string
+    return final_matrix
 
 
 # In[44]:
@@ -95,8 +83,11 @@ def get_puzzle_metrics(con):
 
 
 def get_numbers_string(num_img):
+    num_img = num_img[:,50:]
     final = cv2.copyMakeBorder(num_img, 50, 50, 50, 50, cv2.BORDER_CONSTANT, value=(255,255,255));
-    la = cv2.resize(final, (0,0), fx=.5, fy=.5)
+    __, th = cv2.threshold(final, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    th = cv2.erode(th, np.ones((3,3)))
+    la = cv2.resize(th, (0,0), fx=.5, fy=.5)
     text = pytesseract.image_to_string(la)
     return text
 
@@ -106,13 +97,12 @@ def get_numbers_string(num_img):
 
 def make_dictionary(text):
     num_dict = {}
-    i = 0
+    i = 1
     for char in text:
-        if i > 0:
-            if char == ' ':
-                i = i - 1
-            else:
-                num_dict[i] = char
+        if char == ' ':
+            i = i - 1
+        else:
+            num_dict[i] = char
         i += 1
     return num_dict
 
