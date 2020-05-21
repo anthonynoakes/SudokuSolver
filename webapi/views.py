@@ -32,10 +32,17 @@ def index(request):
 
     result = sudoku_nonsense.get_sudoku_matrix(a)
     print("got matrix")
-
     print(result)
 
-    return HttpResponse('<pre>' + result + '</pre>')
+    string = ""
+    for val in fin:
+        for dig in val:
+            string = string + str(int(dig))
+        
+    print("got string")
+    print(string)
+
+    return HttpResponse('<pre>' + string + '</pre>')
     # return HttpResponse('Hello from Python!')
     # return render(request, "index.html")
 
