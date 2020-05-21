@@ -2,5 +2,5 @@ django
 django-heroku
 gunicorn
 requests
-cv2
+opencv-python
 numpy
