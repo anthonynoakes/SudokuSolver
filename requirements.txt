@@ -1,0 +1,9 @@
+django
+django-heroku
+gunicorn
+requests
+opencv-python
+numpy
+pytesseract
+matplotlib
+django-cors-headers
