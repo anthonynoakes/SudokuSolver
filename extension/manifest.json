@@ -1,0 +1,18 @@
+{
+  "name": "Solve-A-Sudoku",
+  "version": "1.3",
+  "description": "Find the sudoku on your page and solve it!",
+  "background": {
+    "persistent": false,
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_title": "Find and solve your sudoku!"
+  },
+  "permissions": [
+    "activeTab"
+  ],
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'"
+}
